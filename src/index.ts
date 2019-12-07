@@ -8,21 +8,26 @@ for (let i in scenes) {
 const config: any = {
   type: Phaser.AUTO,
   backgroundColor: 0x000000,
-  scale: {
-    mode: Phaser.Scale.ENVELOP,
-    parent: 'app',
-    autoCenter: Phaser.Scale.CENTER_BOTH,
-    width: 750,
-    height: 1334,
-    min: {
-      width: 750,
-      height: 1334
-    },
-    max: {
-      width: 750,
-      height: 1334
+  parent: 'app',
+  width: 640,
+  height: 512,
+  autoCenter: Phaser.Scale.CENTER_BOTH,
+  pixelArt: true,
+  roundPixels: true,
+  physics: {
+    default: 'arcade',
+    arcade: {
+      debug: true,
+      gravity: { y: 0 }
     }
   },
+  // scale: {
+  //   mode: Phaser.Scale.ENVELOP,
+  //   parent: 'app',
+  //   width: 800,
+  //   height: 600,
+  //   autoCenter: Phaser.Scale.CENTER_BOTH
+  // },
   scene
 }
 
