@@ -28,6 +28,7 @@ export default class Enemy extends Phaser.GameObjects.Image {
     if (this.follower.t >= 1) {
       this.setActive(false)
       this.setVisible(false)
+      this.scene.updateHealth(1)
     }
   }
   startOnPath() {
@@ -41,10 +42,7 @@ export default class Enemy extends Phaser.GameObjects.Image {
 
     this.follower.t = 0
     this.path.getPoint(this.follower.t, this.follower.vec)
-    this.setPosition(
-      this.follower.vec.x,
-      this.follower.vec.y
-    )
+    this.setPosition(this.follower.vec.x, this.follower.vec.y)
   }
 
   recieveDamage(damage: any) {
@@ -52,6 +50,7 @@ export default class Enemy extends Phaser.GameObjects.Image {
     if (this.hp <= 0) {
       this.setActive(false)
       this.setVisible(false)
+      this.scene.updateScore(10)
     }
   }
 }

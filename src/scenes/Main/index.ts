@@ -1,7 +1,7 @@
 import { map, levelConfig } from '@/const'
 import Enemy from '@/sprites/Enemy'
 import Turret from '@/sprites/Turret'
-// import Bullet from '@/sprites/Bullet'
+import Bullet from '@/sprites/Bullet'
 
 export default class MainScene extends Phaser.Scene {
   bgMap: any
@@ -15,6 +15,11 @@ export default class MainScene extends Phaser.Scene {
   enemies: any
   turrets: any
   bullets: any
+  score: any
+  baseHealth: any
+  availableTurrets: any
+  roundStarted: any
+  uiScene: any
   constructor() {
     super('MainScene')
     console.log('mainscene....')
@@ -23,9 +28,25 @@ export default class MainScene extends Phaser.Scene {
   init() {
     this.map = map.map((arr: any) => arr.slice())
     this.nextEnemy = 0
+    this.score = 0
+    this.baseHealth = 3
+    this.availableTurrets = 2
+    this.roundStarted = false
+
+    this.events.emit('displayUI')
+    this.events.emit('updateHealth', this.baseHealth)
+    this.events.emit('updateScore', this.score)
+    this.events.emit('updateTurrets', this.availableTurrets)
+    // grab a reference to the UI scene
+    this.uiScene = this.scene.get('UI')
   }
 
   create() {
+    this.events.emit('startRound')
+    this.uiScene.events.on('roundReady', () => {
+      this.roundStarted = true
+    })
+
     this.createMap()
     this.createPath()
     this.createCursor()
@@ -33,7 +54,7 @@ export default class MainScene extends Phaser.Scene {
   }
 
   update(time: any, delta: any) {
-    if (time > this.nextEnemy) {
+    if (time > this.nextEnemy && this.roundStarted) {
       let enemy = this.enemies.getFirstDead()
       if (!enemy) {
         enemy = new Enemy(this, 0, 0, this.path)
@@ -48,6 +69,24 @@ export default class MainScene extends Phaser.Scene {
       }
     }
   }
+
+  updateScore(score: any) {
+    this.score += score
+    this.events.emit('updateScore', this.score)
+  }
+  updateHealth(health: any) {
+    this.baseHealth -= health
+    this.events.emit('updateHealth', this.baseHealth)
+    if (this.baseHealth <= 0) {
+      this.events.emit('hideUI')
+      this.scene.start('Title')
+    }
+  }
+  updateTurrets() {
+    this.availableTurrets--
+    this.events.emit('updateTurrets', this.availableTurrets)
+  }
+
   createMap() {
     this.bgMap = this.make.tilemap({ key: 'level1' })
     this.tiles = this.bgMap.addTilesetImage('terrainTiles_default')
@@ -94,17 +133,17 @@ export default class MainScene extends Phaser.Scene {
       classType: Turret,
       runChildUpdate: true
     })
-    // this.bullets = this.add.group({
-    //   classType: Bullet,
-    //   runChildUpdate: true
-    // })
+    this.bullets = this.add.group({
+      classType: Bullet,
+      runChildUpdate: true
+    })
 
     // 子弹与敌人碰撞
-    // this.physics.add.overlap(
-    //   this.enemies,
-    //   this.bullets,
-    //   this.damageEnemy.bind(this)
-    // )
+    this.physics.add.overlap(
+      this.enemies,
+      this.bullets,
+      this.damageEnemy.bind(this)
+    )
 
     this.input.on('pointerdown', this.placeTurret.bind(this))
   }
@@ -130,8 +169,8 @@ export default class MainScene extends Phaser.Scene {
   addBullet(x: any, y: any, angle: any) {
     let bullet = this.bullets.getFirstDead()
     if (!bullet) {
-      // bullet = new Bullet(this, 0, 0)
-      // this.bullets.add(bullet)
+      bullet = new Bullet(this, 0, 0)
+      this.bullets.add(bullet)
     }
     bullet.fire(x, y, angle)
   }
@@ -156,8 +195,8 @@ export default class MainScene extends Phaser.Scene {
     if (enemy.active === true && bullet.active === true) {
       bullet.setActive(false)
       bullet.setVisible(false)
-      // decrease the enemy hp
-      // enemy.receiveDamage(levelConfig.bulletDamage)
+      // @ts-ignore
+      enemy.receiveDamage(levelConfig.bulletDamage)
     }
   }
 }

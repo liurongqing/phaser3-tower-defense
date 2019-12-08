@@ -1,25 +1,29 @@
-import { BASE_URL, PATH_URL } from '@/const'
 export default class UIScene extends Phaser.Scene {
+  scoreText: any
+  MainScene: any
   constructor() {
-    super('UIScene')
+    super({ key: 'UI', active: true })
   }
-
-  preload() {
-    // this.load.setBaseURL(BASE_URL)
-    // this.load.setPath(PATH_URL)
-    // this.load.image('logo', 'logo/zenva_logo.png')
+  init() {
+    this.MainScene = this.scene.get('MainScene')
   }
-
   create() {
-    // this.scene.start('PreloaderScene')
-    // const logo = this.add.image(400, 150, 'logo')
-    // this.tweens.add({
-    //   targets: logo,
-    //   y: 450,
-    //   duration: 2000,
-    //   ease: 'Power2',
-    //   yoyo: true,
-    //   loop: -1
-    // })
+    this.setupUIElements()
+    this.setupEvenets()
+  }
+  setupUIElements() {
+    this.scoreText = this.add.text(5, 5, 'Score: 0', {
+      fontSize: '16px',
+      fill: '#fff'
+    })
+  }
+  setupEvenets() {
+    this.MainScene.events.on('displayUI', () => {
+      this.scoreText.alpha = 1
+    })
+
+    this.MainScene.events.on('updateScore', (score: any) => {
+      this.scoreText.setText('Score: ' + score)
+    })
   }
 }
